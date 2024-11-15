@@ -1,0 +1,19 @@
+apiVersion: v1
+entries:
+  ado-scaledjob-agents:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-11-15T23:46:37.738896619Z"
+    dependencies:
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.15.2
+    description: Azure Devops build agents via KEDA ScaledJob
+    digest: 42224fef6dbe3e3696dfd1df8d2692eb1a94212960bf371fe32cea91cae62b0e
+    name: ado-scaledjob-agents
+    type: application
+    urls:
+    - https://github.com/Aye-Jeigh/helm-charts/releases/download/ado-scaledjob-agents-0.1.0/ado-scaledjob-agents-0.1.0.tgz
+    version: 0.1.0
+generated: "2024-11-15T23:46:37.738907309Z"
