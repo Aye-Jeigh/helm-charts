@@ -21,13 +21,22 @@ This repository contains a Helm chart for deploying KEDA ScaledJobs on Azure Kub
 
 ## Installation
 
-### Step 1: Clone the Repository
+### Step 1: Install KEDA if it isn't already
+
+```sh
+helm repo add kedacore https://kedacore.github.io/charts
+```
+```sh
+helm install keda kedacore/keda --namespace keda --create-namespace
+```
+
+### Step 2: Add helm ado-scaledjob-agents helm repo
 
 ```sh
 helm repo add ado-scaledjob-agents https://aye-jeigh.github.io/helm-charts
 ```
 
-### Step 2: Customize values.yaml
+### Step 3: Customize values.yaml
 Edit the `values.yaml` file to customize the settings for your environment.
 The following changes are mandatory for the project to work correctly.
 
@@ -44,7 +53,7 @@ triggers:
   poolID: "09"
 ```
 
-### Step 3: Install the Helm Chart
+### Step 4: Install the Helm Chart
 ```sh
 helm install dev-agents ado-scaledjob-agents/ado-scaledjob-agents -f values.yaml
 ```
