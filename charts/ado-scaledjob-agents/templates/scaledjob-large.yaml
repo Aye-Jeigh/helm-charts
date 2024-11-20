@@ -1,0 +1,73 @@
+{{- if .Capabilities.APIVersions.Has "keda.sh/v1alpha1" }}
+  {{- if and (hasKey .Values "scaledjoblarge") .Values.scaledjoblarge.enabled }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: scaledjob-large
+  namespace: {{ .Values.namespace }}
+spec:
+  jobTargetRef:
+    template:
+      spec:
+        containers:
+        - name: {{ .Values.scaledjoblarge.containers.name }}
+          image: {{ .Values.common.image }}
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: {{ .Values.scaledjoblarge.resources.limits.cpu }}
+              memory: {{ .Values.scaledjoblarge.resources.limits.memory | default "3Gi" }}
+            requests:
+             cpu: {{ .Values.scaledjoblarge.resources.requests.cpu | default "500m" }}
+             memory: {{ .Values.scaledjoblarge.resources.requests.memory | default "3Gi" }}
+          env:
+            - name: AZP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: adotoken
+                  key: adotoken
+            - name: AZP_URL
+              value: {{ .Values.common.adoUrl }}
+            - name: AZP_POOL
+              value: {{ .Values.common.adoPoolName }}
+          {{- if .Values.secretprovider.enabled }}
+          volumeMounts:
+          - mountPath: /mnt/secrets-store
+            readOnly: true
+            name: secrets-store
+          {{- end }}
+        {{- if .Values.secretprovider.enabled }}
+        volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "kv-msi"
+        {{- end }}
+        tolerations:
+          {{- range .Values.tolerations }}
+          - key: {{ .key | quote }}
+            operator: {{ .operator | quote }}
+            value: {{ .value | quote }}
+            effect: {{ .effect | quote }}
+          {{- end }}
+        affinity:
+          {{ toYaml .Values.affinity | indent 10 }}
+  pollingInterval: {{ .Values.scaledjoblarge.pollingInterval }}
+  successfulJobsHistoryLimit: {{ .Values.scaledjoblarge.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.scaledjoblarge.failedJobsHistoryLimit }}
+  maxReplicaCount: {{ .Values.scaledjoblarge.maxReplicaCount }}
+  scalingStrategy:
+    strategy: "default"
+  triggers:
+  - type: azure-pipelines
+    metadata:
+      poolID: {{ .Values.scaledjoblarge.triggers.poolID }}
+      organizationURLFromEnv: "AZP_URL"
+      personalAccessTokenFromEnv: "AZP_TOKEN"
+  {{- end}}
+{{- else }}
+{{- fail "KEDA CRD not found. Aborting installation." }}
+{{- end }}

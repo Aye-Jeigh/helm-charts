@@ -1,0 +1,59 @@
+{{- if .Capabilities.APIVersions.Has "keda.sh/v1alpha1" }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+  name: placeholder-job
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: pipeline-agents
+spec:
+  ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: placeholder-job
+          image: {{ .Values.common.image }}
+          resources:
+            limits:
+              memory: "512Mi"
+          env:
+            - name: AZP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: adotoken
+                  key: adotoken
+            - name: AZP_URL
+              value: {{ .Values.common.adoUrl }}
+            - name: AZP_POOL
+              value: {{ .Values.common.adoPoolName }}
+            - name: AZP_PLACEHOLDER
+              value: "1"
+            - name: AZP_AGENT_NAME
+              value: "placeholder-job"
+          {{- if .Values.secretprovider.enabled }}
+          volumeMounts:
+            - mountPath: /mnt/secrets-store
+              readOnly: true
+              name: secrets-store
+          {{- end }}
+      {{- if .Values.secretprovider.enabled }}
+      volumes:
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.secretprovider.name }}
+      {{- end }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      affinity:
+        {{ toYaml .Values.affinity | nindent 8 }}
+{{- else }}
+{{- fail "KEDA CRD not found. Aborting installation." }}
+{{- end }}
+#

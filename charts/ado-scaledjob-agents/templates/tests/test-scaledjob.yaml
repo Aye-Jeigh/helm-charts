@@ -1,0 +1,20 @@
+{{- if .Capabilities.APIVersions.Has "keda.sh/v1alpha1" }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-test"
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-test"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: test-container
+        image: busybox
+        command: ['sh', '-c', 'echo KEDA ScaledJob test successful!']
+{{- end }}

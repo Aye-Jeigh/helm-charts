@@ -1,0 +1,10 @@
+# Ignore Git files
+.git/
+.gitignore
+
+# Ignore any other large or unnecessary files
+*.log
+*.tmp
+*.bak
+*.swp
+

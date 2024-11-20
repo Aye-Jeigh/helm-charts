@@ -1,0 +1,88 @@
+# Namespace where the ScaledJob will be deployed
+namespace: default
+
+common:
+  adoUrl: your_ado_url # Replace with your actual Azure Devops URL
+  adoPoolName: your_ado_pool_name #Replace with your actual Azure Devops Pool name
+  image: ghcr.io/aye-jeigh/ado-scaledjob-agents:1.0.0
+
+# ScaledJob configuration
+scaledjob:
+  containers:
+    # Name of the container running the Azure DevOps agent
+    name: ado-agents
+
+  resources:
+    # Resource limits for the container
+    limits:
+      # Maximum amount of CPU the container can use
+      cpu:
+      # Maximum amount of memory the container can use
+      memory: "3Gi"
+    # Resource requests for the container
+    requests:
+      # Amount of CPU requested for the container
+      cpu:
+      # Amount of memory requested for the container
+      memory: "3Gi"
+
+  # ScaledJob specific settings
+  # Interval in seconds at which the scaler checks for jobs to scale
+  pollingInterval: 15
+  # Number of successful job records to keep
+  successfulJobsHistoryLimit: 0
+  # Number of failed job records to keep
+  failedJobsHistoryLimit: 0
+  # Maximum number of replicas for the ScaledJob
+  maxReplicaCount: 15
+
+  # Azure Pipelines trigger configuration
+  triggers:
+    # ID of the Azure Pipelines pool
+    poolID: "00"
+
+### Scaledjob Large size ###
+scaledjoblarge:
+  enabled: false 
+  containers:
+    name: ado-agents
+  resources:
+    limits:
+      cpu:
+      memory: "6Gi"
+    requests:
+      cpu:
+      memory: "6Gi"
+  pollingInterval: 15
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
+  maxReplicaCount: 15
+  triggers:
+    poolID: "00"
+
+tolerations: []
+#  - key: "kubernetes.azure.com/scalesetpriority"
+#    operator: "Equal"
+#    value: "spot"
+#    effect: "NoSchedule"
+
+# Node affinity settings for scheduling
+affinity: {}
+#  nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#         - matchExpressions:
+#            - key: "kubernetes.azure.com/scalesetpriority"
+#              operator: In
+#              values:
+#                - "spot"
+
+
+# If using the csi driver for azure keyvault enable the SecretProviderClass
+secretprovider:
+  enabled: false # Enables Azure Key Vault integration
+  usePodIdentity: false
+  useVMManagedIdentity: true
+  userAssignedIdentityID: your-user-assigned-identity-id
+  keyVaultName: your-keyvault-name
+  tenantId: your-tenant-id
